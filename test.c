@@ -1,37 +1,30 @@
 #include "cutest/CuTest.h"
-#include "mem.h"
-#include "globals.h"
+#include "alloc.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-
-int get_offset(void* p) {
-	return (int)p - (int)memory;
-}
-int firstword(void* p) {
-	return *((int*)p);
-}
-
-void TestSimple(CuTest *tc) {
-	setup_memory(1024); // setup memory at 1kb
-
-	int* i = my_malloc(sizeof(int) * 2);
-
-	CuAssertIntEquals(tc, get_offset(i), 4);
-	CuAssertIntEquals(tc, firstword(i), 9);
-	CuAssertIntEquals(tc, free_space(), 1012);
-
-	my_free(i);
-
-	CuAssertIntEquals(tc, firstword(i), 8);
-
-	CuAssertIntEquals(tc, free_space(), 1024);
-
-	teardown_memory(); // always use setup_memory at the beginning and teardown at the end
+    
+/*
+ * Your tests won't look like this; they will use helpers like makeNode and
+ * call the actual bst_ functions. This is here to give you an example of
+ * creating space for a BSTNode with malloc and using a testing function to
+ * check the string.
+ *
+ */
+void TestMyMalloc(CuTest *tc) {
+setup_heap();
+void *p1 = my_malloc(0);
+CuAssertPtrEquals(tc, NULL, p1);
+teardown_heap();
 }
 
 
+void TestMyFree(CuTest * tc){
+setup_heap();
+int result = my_free(current_free_list);
+CuAssertIntEquals(tc, 0,result);
+teardown_heap();
+}
 
 /*
  * Note that as you add new testing functions, you need to add them to the list
@@ -39,6 +32,7 @@ void TestSimple(CuTest *tc) {
  */
 CuSuite* StrUtilGetSuite() {
   CuSuite* suite = CuSuiteNew();
-  SUITE_ADD_TEST(suite, TestSimple);
+  SUITE_ADD_TEST(suite, TestMyMalloc);
+  SUITE_ADD_TEST(suite, TestMyFree);
   return suite;
 }
