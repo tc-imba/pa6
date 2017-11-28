@@ -12,18 +12,18 @@
  *
  */
 void TestMyMalloc(CuTest *tc) {
-setup_heap();
-void *p1 = my_malloc(0);
-CuAssertPtrEquals(tc, NULL, p1);
-teardown_heap();
+  setup_heap();
+  void *p1 = my_malloc(0);
+  CuAssertPtrEquals(tc, NULL, p1);
+  teardown_heap();
 }
 
 
 void TestMyFree(CuTest * tc){
-setup_heap();
-int result = my_free(current_free_list);
-CuAssertIntEquals(tc, 0,result);
-teardown_heap();
+  setup_heap();
+  int result = my_free(current_free_list);
+  CuAssertIntEquals(tc, 0,result);
+  teardown_heap();
 }
 
 /*
