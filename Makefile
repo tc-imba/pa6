@@ -3,9 +3,6 @@ AS=as
 ASSIGNMENT_PATH=~/../public/pa6/
 VG=valgrind --leak-check=full --undef-value-errors=no
 
-clean:
-	rm -f main *.o core* *~
-
 test: test.run
 	./test.run
 
@@ -17,3 +14,7 @@ test.run: alloc.o test.c runtest.c
 
 alloc.o: alloc.h alloc.c
 	gcc -Wall -g -c -o alloc.o alloc.c
+
+clean:
+	rm -f main *.o core* *~
+

@@ -4,14 +4,8 @@
 #include <stdio.h>
 #include <string.h>
     
-/*
- * Your tests won't look like this; they will use helpers like makeNode and
- * call the actual bst_ functions. This is here to give you an example of
- * creating space for a BSTNode with malloc and using a testing function to
- * check the string.
- *
- */
-void TestMyMalloc(CuTest *tc) {
+
+void TestMyMalloc0(CuTest *tc) {
   setup_heap();
   void *p1 = my_malloc(0);
   CuAssertPtrEquals(tc, NULL, p1);
@@ -19,7 +13,7 @@ void TestMyMalloc(CuTest *tc) {
 }
 
 
-void TestMyFree(CuTest * tc){
+void TestMyFreeOnFreeEntry(CuTest * tc){
   setup_heap();
   int result = my_free(current_free_list);
   CuAssertIntEquals(tc, 0,result);
@@ -32,7 +26,7 @@ void TestMyFree(CuTest * tc){
  */
 CuSuite* StrUtilGetSuite() {
   CuSuite* suite = CuSuiteNew();
-  SUITE_ADD_TEST(suite, TestMyMalloc);
-  SUITE_ADD_TEST(suite, TestMyFree);
+  SUITE_ADD_TEST(suite, TestMyMalloc0);
+  SUITE_ADD_TEST(suite, TestMyFreeOnFreeEntry);
   return suite;
 }
