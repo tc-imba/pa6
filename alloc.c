@@ -61,7 +61,6 @@ void *my_malloc(size_t size) {
         } else {
             current_free_list = next_free_ptr;
         }
-        *(void **) (free_ptr + WORD_SIZE) = NULL; // easier for debug
         return free_ptr + WORD_SIZE;
     }
 
@@ -71,6 +70,7 @@ void *my_malloc(size_t size) {
 
 int my_free(void *ptr) {
     ptr -= WORD_SIZE;
+    if (ptr < heap_ptr || ptr >= heap_ptr + HEAP_SIZE) return 0;
     int size = *(int *) ptr;
     if (size < WORD_SIZE || size % WORD_SIZE != 1) return 0;
     --(*(int *) ptr);
@@ -81,11 +81,11 @@ int my_free(void *ptr) {
     return 1;
 }
 
-void consolidate(){
-	void *ptr = heap_ptr;
+void consolidate() {
+    void *ptr = heap_ptr;
     void *first_free_ptr = NULL;
     void *prev_free_ptr = NULL;
-    while(1) {
+    while (1) {
         int end = (ptr >= heap_ptr + HEAP_SIZE);
         int size = 0;
         int mod = 0;
@@ -102,13 +102,13 @@ void consolidate(){
         }
         if (end || mod) {
             if (first_free_ptr) {
-                *(int *) first_free_ptr = (int)(ptr - first_free_ptr) - WORD_SIZE;
+                *(int *) first_free_ptr = (int) (ptr - first_free_ptr) - WORD_SIZE;
                 if (prev_free_ptr) {
-                    *(void **)(prev_free_ptr + WORD_SIZE) = first_free_ptr;
+                    *(void **) (prev_free_ptr + WORD_SIZE) = first_free_ptr;
                 } else {
-                    current_free_list = ptr;
+                    current_free_list = first_free_ptr;
                 }
-                prev_free_ptr = ptr;
+                prev_free_ptr = first_free_ptr;
                 first_free_ptr = NULL;
             }
         }
@@ -116,40 +116,50 @@ void consolidate(){
         ptr += size + WORD_SIZE;
     }
     if (prev_free_ptr) {
-        *(void **)(prev_free_ptr + WORD_SIZE) = NULL;
+        *(void **) (prev_free_ptr + WORD_SIZE) = NULL;
     }
 }
 
 void print_heap() {
-    printf("current: [%u]\n", (size_t) current_free_list - (size_t) heap_ptr);
-    unsigned int *ptr = heap_ptr;
-    for (int i = 0; i < HEAP_SIZE; i += 4) {
-        if (*ptr >= (size_t) heap_ptr) {
-            printf("[%u] ", *ptr - (size_t) heap_ptr);
-        } else {
-            printf("%u ", *ptr);
+    printf("current_free_list: %u\n", (size_t) current_free_list - (size_t) heap_ptr);
+    void *ptr = heap_ptr;
+    while (ptr < heap_ptr + HEAP_SIZE) {
+        int size = *(int *) ptr;
+        int mod = size % 4;
+        printf("addr: %d  \tlen: %d  \t", ptr - heap_ptr, *(int *) ptr);
+        if (mod) {
+            size -= mod;
         }
-        ptr += 1;
+        else {
+            void* _ptr = *(void **) (ptr + WORD_SIZE);
+            if (_ptr) {
+                printf("-> addr: %d", _ptr - heap_ptr);
+            } else {
+                printf("end");
+            }
+        }
+        printf("\n");
+        ptr += size + WORD_SIZE;
     }
     printf("\n");
 }
 
-int free_space(){
+int free_space() {
     void *ptr = current_free_list;
     int size = 0;
     while (ptr) {
-        size += *(int *)ptr;
-        ptr = *(void **)(ptr + WORD_SIZE);
+        size += *(int *) ptr;
+        ptr = *(void **) (ptr + WORD_SIZE);
     }
     return size;
 }
 
-int live_data(){
+int live_data() {
     void *ptr = heap_ptr;
     int size = 0;
     while (ptr < heap_ptr + HEAP_SIZE) {
         int _size = *(int *) ptr;
-        int mod = size % 4;
+        int mod = _size % 4;
         if (mod) {
             _size -= mod;
             size += _size;

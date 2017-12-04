@@ -6,9 +6,6 @@
 #include <stdio.h>
 
 int main() {
-    printf("%d\n", sizeof(void *));
-
-
     setup_heap();
 
     print_heap();
@@ -40,6 +37,14 @@ int main() {
     my_free(p3);
     print_heap();
 
-    teardown_heap();
+    printf("free space: %d\n", free_space());
+    printf("live data: %d\n\n", live_data());
 
+    consolidate();
+    print_heap();
+
+    printf("free space: %d\n", free_space());
+    printf("live data: %d\n\n", live_data());
+
+    teardown_heap();
 }
