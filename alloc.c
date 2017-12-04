@@ -81,8 +81,43 @@ int my_free(void *ptr) {
     return 1;
 }
 
-void consolidate() {
-
+void consolidate(){
+	void *ptr = heap_ptr;
+    void *first_free_ptr = NULL;
+    void *prev_free_ptr = NULL;
+    while(1) {
+        int end = (ptr >= heap_ptr + HEAP_SIZE);
+        int size = 0;
+        int mod = 0;
+        if (!end) {
+            size = *(int *) ptr;
+            mod = size % 4;
+            if (mod) {
+                size -= mod;
+            } else {
+                if (!first_free_ptr) {
+                    first_free_ptr = ptr;
+                }
+            }
+        }
+        if (end || mod) {
+            if (first_free_ptr) {
+                *(int *) first_free_ptr = (int)(ptr - first_free_ptr) - WORD_SIZE;
+                if (prev_free_ptr) {
+                    *(void **)(prev_free_ptr + WORD_SIZE) = first_free_ptr;
+                } else {
+                    current_free_list = ptr;
+                }
+                prev_free_ptr = ptr;
+                first_free_ptr = NULL;
+            }
+        }
+        if (end) break;
+        ptr += size + WORD_SIZE;
+    }
+    if (prev_free_ptr) {
+        *(void **)(prev_free_ptr + WORD_SIZE) = NULL;
+    }
 }
 
 void print_heap() {
@@ -99,10 +134,27 @@ void print_heap() {
     printf("\n");
 }
 
-int free_space() {
-    return 0;
+int free_space(){
+    void *ptr = current_free_list;
+    int size = 0;
+    while (ptr) {
+        size += *(int *)ptr;
+        ptr = *(void **)(ptr + WORD_SIZE);
+    }
+    return size;
 }
 
-int live_data() {
-    return 0;
+int live_data(){
+    void *ptr = heap_ptr;
+    int size = 0;
+    while (ptr < heap_ptr + HEAP_SIZE) {
+        int _size = *(int *) ptr;
+        int mod = size % 4;
+        if (mod) {
+            _size -= mod;
+            size += _size;
+        }
+        ptr += _size + WORD_SIZE;
+    }
+    return size;
 }
